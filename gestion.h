@@ -13,6 +13,7 @@ public:
     gestion();
     int getIdprofessionel(QString firstName, QString lastName);
     int  getIdprofil(QString name_profile);
+    int  getIdskill(QString name_skill);
     int ajouterCompetence(QString competence) ;
     void displayProfessionalSkills(QString firstName,QString lastName);
     void displayProfilSkills(QString profile_name);
@@ -28,11 +29,11 @@ public slots:
     void profil();
     void Database();
     void addprofessional(QString const First_name,QString const Last_name);
-    bool addprofile(QString const& name_profile);
-    bool addskills(QString const& name);
-    bool deleteskills(QString const& name);
-    bool deleteProfessional(QString first_name,QString last_name);
-    bool deleteProfil(QString name_profile);
+    void addprofile(QString const& name_profile);
+    void addskills(QString const& name);
+    void deleteskills(QString name);
+    void deleteProfessional(QString first_name,QString last_name);
+    void deleteProfil(QString name_profile);
     bool addprofessionalskills(QString  first_name, QString  last_name,QString skill_name);
     bool addprofileskills(QString profile_name,QString skill_name);
     void reinitiliserdatabase();

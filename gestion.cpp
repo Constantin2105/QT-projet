@@ -5,6 +5,7 @@
 #include <QSqlDatabase>
 #include <QtWidgets>
 #include <QLayout>
+#include <QMessageBox>
 //#include "database.h"
 #include <QString>
 
@@ -47,11 +48,11 @@ void gestion::competence()
         layoutGroupbox3->addRow("Compétence à supprimer:", comboSupprimerCompetence);
         layoutGroupbox3->addRow(Supprimer);
         groupbox3->setLayout(layoutGroupbox3);
-        /*QObject::connect(Supprimer, &QPushButton::clicked, [=]() {
-                QString Nom = ->text();
-                addskills(Nom);
+        QObject::connect(Supprimer, &QPushButton::clicked, [=]() {
+                QString Nom =comboSupprimerCompetence->currentText();
+                deleteskills(Nom);
 
-            });*/
+            });
 
 
         //ajouter ou retirer une competence a un professionnel
@@ -253,7 +254,7 @@ void gestion::profil()
 }
 
 //////////////////
-void gestion::Database()
+/*void gestion::Database()
 {
     bdd=QSqlDatabase::addDatabase("QSQLITE");
     bdd.setDatabaseName("C:/Users/Utilisateur/Desktop/SQL-1/SQL/ProjetQt.db");
@@ -266,75 +267,97 @@ void gestion::Database()
      //numberskillprofile("operateur");
      //numberskillprofessinel("zounmevo","constantin");
     //actualiserCompetenceProfessionel("ZOUNMEVO","constantin")
+    //getIdskill("RAGE");
+}*/
+
+/* méthode pour charger la base de données*/
+void gestion::Database()
+{
+    bdd=QSqlDatabase::addDatabase("QSQLITE");
+    bdd.setDatabaseName("C:/Users/Utilisateur/Desktop/SQL-1/SQL/ProjetQt.db");
+    if(bdd.open()) {
+        QMessageBox::information(nullptr, "Connexion réussie", "La base de données a été ouverte avec succès.");
+    } else {
+        QMessageBox::critical(nullptr, "Erreur de connexion", "Impossible de se connecter à la base de données.");
+    }
 }
 
 
-void gestion::addprofessional(QString const First_name,QString const Last_name)
+
+void gestion::addprofessional(QString const First_name, QString const Last_name)
 {
     QSqlQuery request;
     request.prepare("INSERT INTO professionals(First_name,Last_name) VALUES(:First_name,:Last_name)");
-    request.bindValue(":First_name",First_name);
-    request.bindValue(":Last_name",Last_name);
+    request.bindValue(":First_name", First_name);
+    request.bindValue(":Last_name", Last_name);
     bool success = request.exec();
-    if(success)
-    {qDebug() << "professionnel ajouté" ;}
-    else qDebug() << "Erreur lors de l'ajout du professionnel";
-    //return success;
+
+    if(success) {
+        QMessageBox::information(nullptr, "Professionnel ajouté", "Le professionnel a été ajouté avec succès.");
+    } else {
+        QMessageBox::critical(nullptr, "Erreur d'ajout", "Impossible d'ajouter le professionnel.");
+    }
 }
 
 
-bool gestion::addprofile(QString const& name_profile)
+
+void gestion::addprofile(QString const& name_profile)
 {
     QSqlQuery request;
     request.prepare("INSERT INTO profiles(name_profile) VALUES(:name_profile)");
     request.bindValue(":name_profile",name_profile);
     bool success = request.exec();
-    if(success) qDebug() << "profile Ajoutée";
-    else qDebug() << "Erreur lors de l'ajout du profile";
-    return success;
+    if(success) {
+        QMessageBox::information(nullptr, "Profil ajouté", "Le profil a été ajouté avec succès.");
+    } else {
+        QMessageBox::critical(nullptr, "Erreur d'ajout", "Impossible d'ajouter le profil.");
+    }
 }
 
-bool gestion::addskills(QString const& name)
+void gestion::addskills(QString const& name)
 {
     QSqlQuery request;
     request.prepare("INSERT INTO skills(skill) VALUES(:skill)");
     request.bindValue(":skill",name);
     bool success = request.exec();
-    if(success) qDebug() << "competence Ajoutée";
-    else qDebug() << "Erreur lors de l'ajout de la competence";
-    return success;
+    if(success) {
+        QMessageBox::information(nullptr, "Competence ajoutée", "La competence a été ajouté avec succès.");
+    } else {
+        QMessageBox::critical(nullptr, "Erreur d'ajout", "Impossible d'ajouter la competence.");
+    }
 }
 
-bool gestion::deleteskills(QString const& name)
+void gestion::deleteskills(QString name)
 {
     QSqlQuery request;
-    request.prepare("DELETE FROM skills WHERE skill=(skill) VALUES(:skill)");
-    request.bindValue(":skill",name);
+    request.prepare("DELETE FROM skills WHERE ID_skill=:id");
+    request.bindValue(":id",(getIdskill(name)));
     bool success = request.exec();
-    if(success) qDebug() << "competence supprimée";
-    else qDebug() << "Erreur lors de la suppression de la competence";
-    return success;
+    if(success) {
+        QMessageBox::information(nullptr, "Competence supprimée", "La competence a été supprimée avec succès.");
+    } else {
+        QMessageBox::critical(nullptr, "Erreur de suppression", "Impossible de supprimer la competence.");
+    }
 }
 //slot
-bool gestion::deleteProfessional(QString First_name, QString Last_name)
+void gestion::deleteProfessional(QString First_name, QString Last_name)
 {
-    int id=0;
-    id=getIdprofessionel(First_name,Last_name);
+
     QSqlQuery query;
     query.prepare("DELETE FROM professionals WHERE ID_professional= :id");
-    query.bindValue(":id",id);
+    query.bindValue(":id", getIdprofessionel(First_name,Last_name));
     bool success = query.exec();
-    if (success) {
-        qDebug() << "Professionnel supprimé";
+    if(success) {
+        QMessageBox::information(nullptr, "Professionnel supprimé", "Le professionnel a été supprimé avec succès.");
     } else {
-        qDebug() << "Erreur lors de la suppression du professionnel";
+        QMessageBox::critical(nullptr, "Erreur de suppression", "Impossible de supprimer le professionnel.");
     }
-    return success;
+
 }
 
 //slot
 
-bool gestion::deleteProfil(QString name_profile)
+void gestion::deleteProfil(QString name_profile)
 {
     int id=0;
     id=getIdprofil(name_profile);
@@ -342,12 +365,11 @@ bool gestion::deleteProfil(QString name_profile)
     query.prepare("DELETE FROM profiles WHERE ID_profile= :id");
     query.bindValue(":id",id);
     bool success = query.exec();
-    if (success) {
-        qDebug() << "Profil supprimé";
-    } else {
-        qDebug() << "Erreur lors de la suppression du profil";
-    }
-    return success;
+    if(success) {
+           QMessageBox::information(nullptr, "Profil ajouté", "Le profilaété supprimé avec succès.");
+       } else {
+           QMessageBox::critical(nullptr, "Erreur de suppression", "Impossible de supprimer le profil.");
+       }
 }
 
 
@@ -374,9 +396,37 @@ int  gestion::getIdprofessionel(QString firstName, QString lastName)
 
 int  gestion::getIdprofil(QString name_profile)
 {
+    int id=0;
     QSqlQuery query;
     query.prepare("SELECT ID_profile FROM profiles WHERE  name_profile= :name_profile");
     query.bindValue(":name_profile",name_profile);
+       /* if (!query.exec()) {
+            qCritical() << "Erreur lors de l'exécution de la requête:" << query.lastError().text();
+            return 0;
+        }*/
+
+        // Récupération des résultats de la requête
+        if (query.next()) {
+
+             id = query.value(0).toInt();
+            qDebug() << "ID du profil: " << id;
+           // return id;
+    }
+        return id;
+       /* else
+           {
+            return
+        }*/
+
+
+
+}
+
+int  gestion::getIdskill(QString name_skill)
+{
+    QSqlQuery query;
+    query.prepare("SELECT ID_skill FROM skills WHERE skill= :name_skill");
+    query.bindValue(":name_skill",name_skill);
         if (!query.exec()) {
             qCritical() << "Erreur lors de l'exécution de la requête:" << query.lastError().text();
             return 0;
@@ -386,7 +436,7 @@ int  gestion::getIdprofil(QString name_profile)
         while (query.next()) {
 
             int id = query.value(0).toInt();
-            qDebug() << "ID du profil: " << id;
+            qDebug() << "ID de la competence: " << id;
             return id;
     }
 
@@ -455,18 +505,30 @@ bool gestion::addprofileskills(QString profile_name,QString skill_name)
     return success;
 }
 
-//slot
+
 void gestion::reinitiliserdatabase()
 {
     QStringList tables = bdd.tables();
+    bool resetDone = false; // Added boolean variable to keep track of reset status
+
     foreach (QString table, tables) {
         QSqlQuery query;
         query.exec("DELETE FROM " + table);
         if (query.lastError().isValid()) {
             // Traitement de l'erreur
+        } else {
+            resetDone = true; // If no error occurred, set resetDone to true
         }
     }
- }
+
+    // Display message alerting user if reset was done or not
+    if (resetDone) {
+        QMessageBox::information(nullptr, "Réinitialisation réussie", "La base de données a été réinitialisée.");
+    } else {
+        QMessageBox::warning(nullptr, "Réinitialisation échouée", "La base de données n'a pas été réinitialisée.");
+    }
+}
+
 
 void gestion::displayProfessionalSkills(QString firstName,QString lastName)
 {
@@ -485,12 +547,42 @@ void gestion::displayProfessionalSkills(QString firstName,QString lastName)
             return;
         }
 
-        // Affichage des compétences
+       /* // Affichage des compétences
         qDebug() << "Compétences de" << firstName << lastName << ":";
         while (query.next()) {
             QString skill = query.value(0).toString();
             qDebug() << skill;
+        }*/
+
+        //
+        QDialog* dialog = new QDialog();
+        QVBoxLayout* layout = new QVBoxLayout(dialog);
+
+        // Ajout d'un label pour afficher le nom du professionnel
+        QString title = QString("Compétences de %1 %2").arg(firstName, lastName);
+        QLabel* titleLabel = new QLabel(title, dialog);
+        titleLabel->setStyleSheet("font-weight: bold; font-size: 16px;");
+        layout->addWidget(titleLabel);
+
+        // Ajout d'un widget QTextEdit pour afficher les compétences
+        QTextEdit* textEdit = new QTextEdit(dialog);
+        textEdit->setReadOnly(true);
+        layout->addWidget(textEdit);
+
+        QStringList skillsList;
+        while (query.next()) {
+            QString skill = query.value(0).toString();
+            qDebug() << skill;
+            skillsList << skill;
         }
+        textEdit->setPlainText(skillsList.join("\n"));
+
+        // Affichage de la fenêtre de dialogue
+        dialog->exec();
+
+        // Libération de la mémoire utilisée par la fenêtre de dialogue
+        delete dialog;
+
 
 
 
@@ -571,5 +663,12 @@ void gestion::actualiserCompetenceProfessionel(QString firstName,QString lastNam
 
 
 }
+
+
+/*void deleteskillprofile(QString profile_name,QString skill_name)
+{
+
+
+}*/
 
 
